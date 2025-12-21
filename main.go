@@ -12,15 +12,20 @@ type Cell struct {
 	NearbyMines int
 }
 type Game struct {
-	GameOver bool
-	GameWon  bool
-	Board    [10][10]Cell
+	GameOver      bool
+	GameWon       bool
+	Board         [10][10]Cell
+	TotalCells    int
+	FlaggedCells  int
+	RevealedCells int
 }
 
 func (g *Game) printBoard(r, c int) {
 	for i := 0; i < r; i++ {
 		for j := 0; j < c; j++ {
-			if !g.Board[i][j].IsRevealed {
+			if g.Board[i][j].IsFlagged {
+				fmt.Print("F ")
+			} else if !g.Board[i][j].IsRevealed {
 				fmt.Print(". ")
 			} else {
 				if g.Board[i][j].IsMine {
@@ -110,7 +115,14 @@ func (g *Game) countMines() {
 	}
 }
 func (cell *Cell) handleRevealed(g *Game, r, c int) {
-	if cell.IsRevealed || cell.IsMine {
+	if cell.IsRevealed {
+		fmt.Println("Already revealed")
+		return
+	} else if cell.IsFlagged {
+		fmt.Println("Unflag to reveal the cell")
+		return
+	} else if cell.IsMine {
+		fmt.Print()
 		return
 	}
 	cell.IsRevealed = true
@@ -174,14 +186,33 @@ func (g *Game) handleRevealedNeighbours(r, c int) {
 	}
 }
 func (g *Game) revealCell(r, c int) {
+	if g.Board[r][c].IsFlagged {
+		fmt.Println("Flagged cell should not be revealed")
+		return
+	}
 	if g.Board[r][c].IsMine {
 		g.GameOver = true
 	}
 }
+func (g *Game) flagCell(r, c int) {
+	if g.Board[r][c].IsRevealed {
+		fmt.Println("Revealed Cell cannot be flagged")
+		return
+	}
+
+	g.Board[r][c].IsFlagged = !g.Board[r][c].IsFlagged
+}
 func (g *Game) mainLoop() {
 	var r int
 	var c int
+	var op int
 	for !g.GameOver {
+		fmt.Print("Enter operation: ")
+		fmt.Scan(&op)
+		if op != 1 && op != 2 {
+			fmt.Println("Invalid operation")
+			continue
+		}
 		fmt.Print("Enter the row no: ")
 		fmt.Scan(&r)
 		if r < 0 || r > 9 {
@@ -194,15 +225,26 @@ func (g *Game) mainLoop() {
 			fmt.Println("Invalid column no!")
 			continue
 		}
-		g.revealCell(r, c)
-		g.Board[r][c].handleRevealed(g, r, c)
+		switch op {
+		case 1:
+			g.revealCell(r, c)
+			g.Board[r][c].handleRevealed(g, r, c)
+		case 2:
+			g.flagCell(r, c)
+		default:
+			fmt.Println("Invalid operation!")
+			continue
+		}
 		g.printBoard(10, 10)
 	}
 }
 func NewGame() *Game {
 	g := &Game{
-		GameOver: false,
-		GameWon:  false,
+		GameOver:      false,
+		GameWon:       false,
+		RevealedCells: 0,
+		TotalCells:    100,
+		FlaggedCells:  0,
 	}
 	for i := 0; i < 10; i++ {
 		for j := 0; j < 10; j++ {
