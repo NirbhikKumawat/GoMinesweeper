@@ -20,10 +20,15 @@ type Game struct {
 func (g *Game) printBoard(r, c int) {
 	for i := 0; i < r; i++ {
 		for j := 0; j < c; j++ {
-			if g.Board[i][j].IsMine {
-				fmt.Print("X ")
+			if !g.Board[i][j].IsRevealed {
+				fmt.Print(". ")
 			} else {
-				fmt.Print(g.Board[i][j].NearbyMines, " ")
+				if g.Board[i][j].IsMine {
+					fmt.Print("X ")
+				} else {
+					fmt.Print(g.Board[i][j].NearbyMines)
+					fmt.Print(" ")
+				}
 			}
 		}
 		fmt.Println()
@@ -104,6 +109,96 @@ func (g *Game) countMines() {
 		}
 	}
 }
+func (cell *Cell) handleRevealed(g *Game, r, c int) {
+	if cell.IsRevealed || cell.IsMine {
+		return
+	}
+	cell.IsRevealed = true
+	if cell.NearbyMines == 0 {
+		g.handleRevealedNeighbours(r, c)
+	}
+}
+func (g *Game) handleRevealedNeighbours(r, c int) {
+	if g.Board[r][c].NearbyMines != 0 {
+		return
+	}
+	if r > 0 && r < 9 && c > 0 && c < 9 {
+		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
+		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1)
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r+1][c+1].handleRevealed(g, r+1, c+1)
+	} else if r == 0 && c == 0 {
+		g.Board[0][1].handleRevealed(g, 0, 1)
+		g.Board[1][0].handleRevealed(g, 1, 0)
+		g.Board[1][1].handleRevealed(g, 1, 1)
+	} else if r == 0 && c == 9 {
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1)
+	} else if r == 9 && c == 0 {
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
+		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1)
+	} else if r == 9 && c == 9 {
+		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+	} else if r == 0 {
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1)
+		g.Board[r+1][c+1].handleRevealed(g, r+1, c+1)
+	} else if c == 0 {
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r+1][c+1].handleRevealed(g, r+1, c+1)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
+		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1)
+	} else if r == 9 {
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
+	} else if c == 9 {
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1)
+	}
+}
+func (g *Game) revealCell(r, c int) {
+	if g.Board[r][c].IsMine {
+		g.GameOver = true
+	}
+}
+func (g *Game) mainLoop() {
+	var r int
+	var c int
+	for !g.GameOver {
+		fmt.Print("Enter the row no: ")
+		fmt.Scan(&r)
+		if r < 0 || r > 9 {
+			fmt.Println("Invalid row no!")
+			continue
+		}
+		fmt.Print("Enter the column no: ")
+		fmt.Scan(&c)
+		if c < 0 || c > 9 {
+			fmt.Println("Invalid column no!")
+			continue
+		}
+		g.revealCell(r, c)
+		g.Board[r][c].handleRevealed(g, r, c)
+		g.printBoard(10, 10)
+	}
+}
 func NewGame() *Game {
 	g := &Game{
 		GameOver: false,
@@ -125,4 +220,6 @@ func NewGame() *Game {
 func main() {
 	minesweeper := NewGame()
 	minesweeper.printBoard(10, 10)
+	minesweeper.mainLoop()
+
 }
