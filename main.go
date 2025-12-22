@@ -46,10 +46,51 @@ func (g *Game) revealBoard() {
 		os.Stdout.Write([]byte(" "))
 		for j := 0; j < c; j++ {
 			if g.Board[i][j].IsMine {
+				os.Stdout.Write([]byte("\033[97m"))
 				os.Stdout.Write([]byte("X "))
+				os.Stdout.Write([]byte("\033[0m"))
 			} else {
-				os.Stdout.Write([]byte(strconv.Itoa(g.Board[i][j].NearbyMines)))
-				os.Stdout.Write([]byte(" "))
+				if g.Board[i][j].NearbyMines == 0 {
+					os.Stdout.Write([]byte("\033[90m"))
+					os.Stdout.Write([]byte("0 "))
+					os.Stdout.Write([]byte("\033[0m"))
+				} else if g.Board[i][j].NearbyMines == 1 {
+					os.Stdout.Write([]byte("\033[34m"))
+					os.Stdout.Write([]byte("1 "))
+					os.Stdout.Write([]byte("\033[0m"))
+				} else if g.Board[i][j].NearbyMines == 2 {
+					os.Stdout.Write([]byte("\033[32m"))
+					os.Stdout.Write([]byte("2 "))
+					os.Stdout.Write([]byte("\033[0m"))
+				} else if g.Board[i][j].NearbyMines == 3 {
+					os.Stdout.Write([]byte("\033[31m"))
+					os.Stdout.Write([]byte("3 "))
+					os.Stdout.Write([]byte("\033[0m"))
+				} else if g.Board[i][j].NearbyMines == 4 {
+					os.Stdout.Write([]byte("\033[35m"))
+					os.Stdout.Write([]byte("4 "))
+					os.Stdout.Write([]byte("\033[0m"))
+				} else if g.Board[i][j].NearbyMines == 5 {
+					os.Stdout.Write([]byte("\033[38;5;214m"))
+					os.Stdout.Write([]byte("5 "))
+					os.Stdout.Write([]byte("\033[0m"))
+				} else if g.Board[i][j].NearbyMines == 6 {
+					os.Stdout.Write([]byte("\033[36m"))
+					os.Stdout.Write([]byte("6 "))
+					os.Stdout.Write([]byte("\033[0m"))
+				} else if g.Board[i][j].NearbyMines == 7 {
+					os.Stdout.Write([]byte("\033[33m"))
+					os.Stdout.Write([]byte("7 "))
+					os.Stdout.Write([]byte("\033[0m"))
+				} else if g.Board[i][j].NearbyMines == 8 {
+					os.Stdout.Write([]byte("\033[91m"))
+					os.Stdout.Write([]byte("8 "))
+					os.Stdout.Write([]byte("\033[0m"))
+				} else {
+					os.Stdout.Write([]byte(strconv.Itoa(g.Board[i][j].NearbyMines)))
+					os.Stdout.Write([]byte(" "))
+				}
+
 			}
 		}
 		os.Stdout.Write([]byte("\n"))
@@ -69,15 +110,58 @@ func (g *Game) printBoard() {
 		os.Stdout.Write([]byte(" "))
 		for j := 0; j < c; j++ {
 			if g.Board[i][j].IsFlagged {
+				os.Stdout.Write([]byte("\033[38;5;88m"))
 				os.Stdout.Write([]byte("F "))
+				os.Stdout.Write([]byte("\033[0m"))
 			} else if !g.Board[i][j].IsRevealed {
 				os.Stdout.Write([]byte(". "))
 			} else {
 				if g.Board[i][j].IsMine {
+					os.Stdout.Write([]byte("\033[34m"))
 					os.Stdout.Write([]byte("X "))
+					os.Stdout.Write([]byte("\033[0m"))
 				} else {
-					os.Stdout.Write([]byte(strconv.Itoa(g.Board[i][j].NearbyMines)))
-					os.Stdout.Write([]byte(" "))
+					if g.Board[i][j].NearbyMines == 0 {
+						os.Stdout.Write([]byte("\033[90m"))
+						os.Stdout.Write([]byte("0 "))
+						os.Stdout.Write([]byte("\033[0m"))
+					} else if g.Board[i][j].NearbyMines == 1 {
+						os.Stdout.Write([]byte("\033[34m"))
+						os.Stdout.Write([]byte("1 "))
+						os.Stdout.Write([]byte("\033[0m"))
+					} else if g.Board[i][j].NearbyMines == 2 {
+						os.Stdout.Write([]byte("\033[32m"))
+						os.Stdout.Write([]byte("2 "))
+						os.Stdout.Write([]byte("\033[0m"))
+					} else if g.Board[i][j].NearbyMines == 3 {
+						os.Stdout.Write([]byte("\033[31m"))
+						os.Stdout.Write([]byte("3 "))
+						os.Stdout.Write([]byte("\033[0m"))
+					} else if g.Board[i][j].NearbyMines == 4 {
+						os.Stdout.Write([]byte("\033[35m"))
+						os.Stdout.Write([]byte("4 "))
+						os.Stdout.Write([]byte("\033[0m"))
+					} else if g.Board[i][j].NearbyMines == 5 {
+						os.Stdout.Write([]byte("\033[38;5;214m"))
+						os.Stdout.Write([]byte("5 "))
+						os.Stdout.Write([]byte("\033[0m"))
+					} else if g.Board[i][j].NearbyMines == 6 {
+						os.Stdout.Write([]byte("\033[36m"))
+						os.Stdout.Write([]byte("6 "))
+						os.Stdout.Write([]byte("\033[0m"))
+					} else if g.Board[i][j].NearbyMines == 7 {
+						os.Stdout.Write([]byte("\033[33m"))
+						os.Stdout.Write([]byte("7 "))
+						os.Stdout.Write([]byte("\033[0m"))
+					} else if g.Board[i][j].NearbyMines == 8 {
+						os.Stdout.Write([]byte("\033[91m"))
+						os.Stdout.Write([]byte("8 "))
+						os.Stdout.Write([]byte("\033[0m"))
+					} else {
+						os.Stdout.Write([]byte(strconv.Itoa(g.Board[i][j].NearbyMines)))
+						os.Stdout.Write([]byte(" "))
+					}
+
 				}
 			}
 		}
