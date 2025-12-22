@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -34,53 +35,53 @@ type Game struct {
 func (g *Game) revealBoard() {
 	c := g.Cols
 	r := g.Rows
-	fmt.Print("  ")
+	os.Stdout.Write([]byte("  "))
 	for i := 0; i < c; i++ {
-		fmt.Print(i)
-		fmt.Print(" ")
+		os.Stdout.Write([]byte(strconv.Itoa(i)))
+		os.Stdout.Write([]byte(" "))
 	}
-	fmt.Println()
+	os.Stdout.Write([]byte("\n"))
 	for i := 0; i < r; i++ {
-		fmt.Print(i)
-		fmt.Print(" ")
+		os.Stdout.Write([]byte(strconv.Itoa(i)))
+		os.Stdout.Write([]byte(" "))
 		for j := 0; j < c; j++ {
 			if g.Board[i][j].IsMine {
-				fmt.Print("X ")
+				os.Stdout.Write([]byte("X "))
 			} else {
-				fmt.Print(g.Board[i][j].NearbyMines)
-				fmt.Print(" ")
+				os.Stdout.Write([]byte(strconv.Itoa(g.Board[i][j].NearbyMines)))
+				os.Stdout.Write([]byte(" "))
 			}
 		}
-		fmt.Println()
+		os.Stdout.Write([]byte("\n"))
 	}
 }
 func (g *Game) printBoard() {
 	c := g.Cols
 	r := g.Rows
-	fmt.Print("  ")
+	os.Stdout.Write([]byte("  "))
 	for i := 0; i < c; i++ {
-		fmt.Print(i)
-		fmt.Print(" ")
+		os.Stdout.Write([]byte(strconv.Itoa(i)))
+		os.Stdout.Write([]byte(" "))
 	}
-	fmt.Println()
+	os.Stdout.Write([]byte("\n"))
 	for i := 0; i < r; i++ {
-		fmt.Print(i)
-		fmt.Print(" ")
+		os.Stdout.Write([]byte(strconv.Itoa(i)))
+		os.Stdout.Write([]byte(" "))
 		for j := 0; j < c; j++ {
 			if g.Board[i][j].IsFlagged {
-				fmt.Print("F ")
+				os.Stdout.Write([]byte("F "))
 			} else if !g.Board[i][j].IsRevealed {
-				fmt.Print(". ")
+				os.Stdout.Write([]byte(". "))
 			} else {
 				if g.Board[i][j].IsMine {
-					fmt.Print("X ")
+					os.Stdout.Write([]byte("X "))
 				} else {
-					fmt.Print(g.Board[i][j].NearbyMines)
-					fmt.Print(" ")
+					os.Stdout.Write([]byte(strconv.Itoa(g.Board[i][j].NearbyMines)))
+					os.Stdout.Write([]byte(" "))
 				}
 			}
 		}
-		fmt.Println()
+		os.Stdout.Write([]byte("\n"))
 	}
 }
 func (g *Game) placeMines() {
@@ -230,7 +231,7 @@ func (g *Game) handleRevealedNeighbours(r, c int) {
 }
 func (g *Game) revealCell(r, c int) {
 	if g.Board[r][c].IsFlagged {
-		fmt.Println("Flagged cell should not be revealed")
+		os.Stdout.Write([]byte("Flagged cell should not be revealed"))
 		return
 	}
 	if g.Board[r][c].IsMine {
@@ -239,7 +240,7 @@ func (g *Game) revealCell(r, c int) {
 }
 func (g *Game) flagCell(r, c int) {
 	if g.Board[r][c].IsRevealed {
-		fmt.Println("Revealed Cell cannot be flagged")
+		os.Stdout.Write([]byte("Revealed Cell cannot be flagged"))
 		return
 	}
 
@@ -259,22 +260,24 @@ func (g *Game) mainLoop() {
 	var c int
 	var op int
 	for !g.GameOver {
-		fmt.Print("Enter operation: ")
+		g.printBoard()
+		os.Stdout.Write([]byte("\n"))
+		os.Stdout.Write([]byte("Enter operation: "))
 		fmt.Scan(&op)
 		if op != 1 && op != 2 {
-			fmt.Println("Invalid operation")
+			os.Stdout.Write([]byte("Invalid Operation"))
 			continue
 		}
-		fmt.Print("Enter the row no: ")
+		os.Stdout.Write([]byte("Enter the row no: "))
 		fmt.Scan(&r)
 		if r < 0 || r > i-1 {
-			fmt.Println("Invalid row no!")
+			os.Stdout.Write([]byte("Invalid row no"))
 			continue
 		}
-		fmt.Print("Enter the column no: ")
+		os.Stdout.Write([]byte("Enter the column no: "))
 		fmt.Scan(&c)
 		if c < 0 || c > j-1 {
-			fmt.Println("Invalid column no!")
+			os.Stdout.Write([]byte("Invalid column no!"))
 			continue
 		}
 		switch op {
@@ -284,20 +287,21 @@ func (g *Game) mainLoop() {
 		case 2:
 			g.flagCell(r, c)
 		default:
-			fmt.Println("Invalid operation!")
+			os.Stdout.Write([]byte("Invalid Operation"))
+			os.Stdout.Write([]byte("\n"))
 			continue
 		}
-		g.printBoard()
 		if g.checkCompleted() {
 			break
 		}
 	}
 	if g.GameWon {
-		fmt.Println("Game completed")
+		os.Stdout.Write([]byte("Game Completed"))
 	} else {
 		g.revealBoard()
-		fmt.Println("Game Over")
+		os.Stdout.Write([]byte("Game Over"))
 	}
+	os.Stdout.Write([]byte("\n"))
 }
 func NewGame(mines, r, c int) *Game {
 	g := &Game{
@@ -328,13 +332,14 @@ func NewGame(mines, r, c int) *Game {
 }
 func runMinesweeper(mines, rows, cols int) {
 	minesweeper := NewGame(mines, rows, cols)
-	minesweeper.printBoard()
 	minesweeper.mainLoop()
 }
 func playMinesweeper(cmd *cobra.Command, args []string) {
 	runMinesweeper(pmines, prows, pcols)
 }
+
 func main() {
+
 	var rootCmd = &cobra.Command{
 		Use:   "minesweeper",
 		Short: "play minesweeper",
@@ -346,7 +351,7 @@ func main() {
 	rootCmd.Flags().IntVarP(&pcols, "cols", "c", 10, "no of columns on the board")
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		os.Stdout.Write([]byte(err.Error()))
 		os.Exit(1)
 	}
 }
