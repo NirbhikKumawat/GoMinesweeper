@@ -3,6 +3,15 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+var (
+	prows  int
+	pcols  int
+	pmines int
 )
 
 type Cell struct {
@@ -23,8 +32,18 @@ type Game struct {
 }
 
 func (g *Game) revealBoard() {
-	for i := 0; i < g.Rows; i++ {
-		for j := 0; j < g.Cols; j++ {
+	c := g.Cols
+	r := g.Rows
+	fmt.Print("  ")
+	for i := 0; i < c; i++ {
+		fmt.Print(i)
+		fmt.Print(" ")
+	}
+	fmt.Println()
+	for i := 0; i < r; i++ {
+		fmt.Print(i)
+		fmt.Print(" ")
+		for j := 0; j < c; j++ {
 			if g.Board[i][j].IsMine {
 				fmt.Print("X ")
 			} else {
@@ -142,70 +161,71 @@ func (g *Game) countMines() {
 		}
 	}
 }
-func (cell *Cell) handleRevealed(g *Game, r, c, i, j int) {
+func (cell *Cell) handleRevealed(g *Game, r, c int) {
 	if cell.IsRevealed || cell.IsMine || cell.IsFlagged {
-		fmt.Println("Already revealed")
 		return
 	}
 	cell.IsRevealed = true
 	g.RevealedCells++
 	if cell.NearbyMines == 0 {
-		g.handleRevealedNeighbours(r, c, i, j)
+		g.handleRevealedNeighbours(r, c)
 	}
 }
-func (g *Game) handleRevealedNeighbours(r, c, i, j int) {
+func (g *Game) handleRevealedNeighbours(r, c int) {
+	i := g.Rows
+	j := g.Cols
 	if g.Board[r][c].NearbyMines != 0 {
 		return
 	}
 	if r > 0 && r < i-1 && c > 0 && c < j-1 {
-		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1, i, j)
-		g.Board[r-1][c].handleRevealed(g, r-1, c, i, j)
-		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1, i, j)
-		g.Board[r][c-1].handleRevealed(g, r, c-1, i, j)
-		g.Board[r][c+1].handleRevealed(g, r, c+1, i, j)
-		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1, i, j)
-		g.Board[r+1][c].handleRevealed(g, r+1, c, i, j)
-		g.Board[r+1][c+1].handleRevealed(g, r+1, c+1, i, j)
+		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
+		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1)
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r+1][c+1].handleRevealed(g, r+1, c+1)
 	} else if r == 0 && c == 0 {
-		g.Board[0][1].handleRevealed(g, 0, 1, i, j)
-		g.Board[1][0].handleRevealed(g, 1, 0, i, j)
-		g.Board[1][1].handleRevealed(g, 1, 1, i, j)
+		g.Board[0][1].handleRevealed(g, 0, 1)
+		g.Board[1][0].handleRevealed(g, 1, 0)
+		g.Board[1][1].handleRevealed(g, 1, 1)
 	} else if r == 0 && c == j-1 {
-		g.Board[r][c-1].handleRevealed(g, r, c-1, i, j)
-		g.Board[r+1][c].handleRevealed(g, r+1, c, i, j)
-		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1, i, j)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1)
 	} else if r == i-1 && c == 0 {
-		g.Board[r-1][c].handleRevealed(g, r-1, c, i, j)
-		g.Board[r][c+1].handleRevealed(g, r, c+1, i, j)
-		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1, i, j)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
+		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1)
 	} else if r == i-1 && c == j-1 {
-		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1, i, j)
-		g.Board[r-1][c].handleRevealed(g, r-1, c, i, j)
-		g.Board[r][c-1].handleRevealed(g, r, c-1, i, j)
+		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
 	} else if r == 0 {
-		g.Board[r][c-1].handleRevealed(g, r, c-1, i, j)
-		g.Board[r][c+1].handleRevealed(g, r, c+1, i, j)
-		g.Board[r+1][c].handleRevealed(g, r+1, c, i, j)
-		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1, i, j)
-		g.Board[r+1][c+1].handleRevealed(g, r+1, c+1, i, j)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1)
+		g.Board[r+1][c+1].handleRevealed(g, r+1, c+1)
 	} else if c == 0 {
-		g.Board[r+1][c].handleRevealed(g, r+1, c, i, j)
-		g.Board[r-1][c].handleRevealed(g, r-1, c, i, j)
-		g.Board[r+1][c+1].handleRevealed(g, r+1, c+1, i, j)
-		g.Board[r][c+1].handleRevealed(g, r, c+1, i, j)
-		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1, i, j)
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r+1][c+1].handleRevealed(g, r+1, c+1)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
+		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1)
 	} else if r == i-1 {
-		g.Board[r-1][c].handleRevealed(g, r-1, c, i, j)
-		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1, i, j)
-		g.Board[r][c-1].handleRevealed(g, r, c-1, i, j)
-		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1, i, j)
-		g.Board[r][c+1].handleRevealed(g, r, c+1, i, j)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r-1][c+1].handleRevealed(g, r-1, c+1)
+		g.Board[r][c+1].handleRevealed(g, r, c+1)
 	} else if c == j-1 {
-		g.Board[r+1][c].handleRevealed(g, r+1, c, i, j)
-		g.Board[r-1][c].handleRevealed(g, r-1, c, i, j)
-		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1, i, j)
-		g.Board[r][c-1].handleRevealed(g, r, c-1, i, j)
-		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1, i, j)
+		g.Board[r+1][c].handleRevealed(g, r+1, c)
+		g.Board[r-1][c].handleRevealed(g, r-1, c)
+		g.Board[r+1][c-1].handleRevealed(g, r+1, c-1)
+		g.Board[r][c-1].handleRevealed(g, r, c-1)
+		g.Board[r-1][c-1].handleRevealed(g, r-1, c-1)
 	}
 }
 func (g *Game) revealCell(r, c int) {
@@ -260,7 +280,7 @@ func (g *Game) mainLoop() {
 		switch op {
 		case 1:
 			g.revealCell(r, c)
-			g.Board[r][c].handleRevealed(g, r, c, i, j)
+			g.Board[r][c].handleRevealed(g, r, c)
 		case 2:
 			g.flagCell(r, c)
 		default:
@@ -306,8 +326,27 @@ func NewGame(mines, r, c int) *Game {
 	g.countMines()
 	return g
 }
-func main() {
-	minesweeper := NewGame(12, 10, 10)
+func runMinesweeper(mines, rows, cols int) {
+	minesweeper := NewGame(mines, rows, cols)
 	minesweeper.printBoard()
 	minesweeper.mainLoop()
+}
+func playMinesweeper(cmd *cobra.Command, args []string) {
+	runMinesweeper(pmines, prows, pcols)
+}
+func main() {
+	var rootCmd = &cobra.Command{
+		Use:   "minesweeper",
+		Short: "play minesweeper",
+		Long:  "minesweeper in your terminal",
+		Run:   playMinesweeper,
+	}
+	rootCmd.Flags().IntVarP(&pmines, "mines", "m", 12, "no of mines on the board")
+	rootCmd.Flags().IntVarP(&prows, "rows", "r", 10, "no of rows on the board")
+	rootCmd.Flags().IntVarP(&pcols, "cols", "c", 10, "no of columns on the board")
+
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
