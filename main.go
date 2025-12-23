@@ -4,18 +4,13 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"minesweeper/cmd"
 	"os"
 	"strconv"
 
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
-)
-
-var (
-	prows  int
-	pcols  int
-	pmines int
 )
 
 type Cell struct {
@@ -388,27 +383,15 @@ func NewGame(mines, r, c int) *Game {
 	g.countMines()
 	return g
 }
-func playMinesweeper(cmd *cobra.Command, args []string) {
-	p := tea.NewProgram(initialModel(pmines, prows, pcols))
-	if _, err := p.Run(); err != nil {
-		log.Fatal(err)
-	}
-}
-
 func main() {
-
-	var rootCmd = &cobra.Command{
-		Use:   "minesweeper",
-		Short: "play minesweeper",
-		Long:  "minesweeper in your terminal",
-		Run:   playMinesweeper,
+	cmd.RootCmd.Run = func(cd *cobra.Command, args []string) {
+		p := tea.NewProgram(initialModel(cmd.Pmines, cmd.Prows, cmd.Pcols))
+		if _, err := p.Run(); err == nil {
+			log.Fatal(err)
+		}
 	}
-	rootCmd.Flags().IntVarP(&pmines, "mines", "m", 12, "no of mines on the board")
-	rootCmd.Flags().IntVarP(&prows, "rows", "r", 10, "no of rows on the board")
-	rootCmd.Flags().IntVarP(&pcols, "cols", "c", 10, "no of columns on the board")
-
-	if err := rootCmd.Execute(); err != nil {
-		os.Stdout.Write([]byte(err.Error()))
+	if err := cmd.RootCmd.Execute(); err != nil {
+		log.Fatal(err)
 		os.Exit(1)
 	}
 }
