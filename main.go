@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
@@ -35,6 +36,7 @@ type Game struct {
 }
 type model struct {
 	game     *Game
+	progress progress.Model
 	irow     string
 	icol     string
 	isRowSel bool
@@ -44,6 +46,7 @@ func initialModel(m, r, c int) model {
 	return model{
 		game:     NewGame(m, r, c),
 		isRowSel: true,
+		progress: progress.New(progress.WithDefaultGradient()),
 	}
 }
 func (m model) Init() tea.Cmd {
@@ -95,10 +98,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 func (m model) View() string {
 	g := m.game
-	s := "Minesweeper (Press 'q' to quit)\n\n"
+	s := "Minesweeper (Press 'q' to quit)\n"
 	r := g.Rows
 	c := g.Cols
-
+	ratio := float64(g.RevealedCells) / float64(g.TotalCells-g.Mines)
+	s += "\n" + m.progress.ViewAs(ratio) + "\n\n"
 	s += "  "
 	for i := 0; i < c; i++ {
 		s += fmt.Sprintf("%d ", i)
