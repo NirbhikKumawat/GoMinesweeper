@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"minesweeper/internal/ui"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +19,10 @@ var RootCmd = &cobra.Command{
 	Short: "play minesweeper",
 	Long:  "minesweeper in your terminal",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Starting the game with: %d rows, %d cols, %d mines\n", Prows, Pcols, Pmines)
+		p := tea.NewProgram(ui.InitialModel(Pmines, Prows, Pcols))
+		if _, err := p.Run(); err == nil {
+			log.Fatal(err)
+		}
 	},
 }
 
