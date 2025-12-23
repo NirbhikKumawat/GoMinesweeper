@@ -57,16 +57,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "tab", "enter":
 			m.isRowSel = !m.isRowSel
+		case "backspace":
+			if m.isRowSel && len(m.irow) > 0 {
+				m.irow = m.irow[:len(m.irow)-1]
+			} else {
+				m.icol = m.icol[:len(m.icol)-1]
+			}
 		case "r":
 			r, _ := strconv.Atoi(m.irow)
 			c, _ := strconv.Atoi(m.icol)
-			if r > 0 && r < m.game.Rows && c > 0 && c < m.game.Cols {
+			if r >= 0 && r < m.game.Rows && c >= 0 && c < m.game.Cols {
 				m.game.revealCell(r, c)
 				m.game.Board[r][c].handleRevealed(m.game, r, c)
+				m.game.checkCompleted()
 			}
 			m.irow = ""
 			m.icol = ""
 			m.isRowSel = true
+		case "f":
+			r, _ := strconv.Atoi(m.irow)
+			c, _ := strconv.Atoi(m.icol)
+			if r >= 0 && r < m.game.Rows && c >= 0 && c < m.game.Cols {
+				m.game.flagCell(r, c)
+			}
+			m.irow = ""
+			m.icol = ""
+			m.isRowSel = true
+		case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9":
+			if m.isRowSel {
+				m.irow += msg.String()
+			} else {
+				m.icol += msg.String()
+			}
 		}
 	}
 	return m, nil
@@ -112,6 +134,21 @@ func (m model) View() string {
 			}
 		}
 		s += "\n"
+	}
+	rowMarker, colMarker := " ", " "
+	if m.isRowSel {
+		rowMarker = ">"
+	} else {
+		colMarker = "<"
+	}
+	s += fmt.Sprintf("\n%s Row: %s %s Col: %s", rowMarker, m.irow, colMarker, m.icol)
+	s += "\n (Type numbers, Tab to switch,'r' to reveal,'f' to flag)\n"
+
+	if g.GameOver {
+		s += "\n\033[31mGAME OVER! Press 'q' to quit.\033[0m\n"
+	}
+	if g.GameWon {
+		s += "\n\033[31mGAME Won! Press 'q' to quit.\033[0m\n"
 	}
 	return s
 }
