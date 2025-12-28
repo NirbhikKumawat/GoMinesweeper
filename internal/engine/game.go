@@ -22,7 +22,7 @@ type Game struct {
 	Mines         int
 }
 
-func (g *Game) PlaceMines() {
+func (g *Game) placeMines() {
 	mines := g.Mines
 	minesPlaced := 0
 	for minesPlaced < mines {
@@ -34,67 +34,67 @@ func (g *Game) PlaceMines() {
 		}
 	}
 }
-func (cell *Cell) CheckMine() {
+func (cell *Cell) checkMine() {
 	if cell.IsMine {
 	} else {
 		cell.NearbyMines++
 	}
 }
-func (g *Game) CountMines() {
+func (g *Game) countMines() {
 	r := g.Rows
 	c := g.Cols
 	for i := 0; i < r; i++ {
 		for j := 0; j < c; j++ {
 			if g.Board[i][j].IsMine {
 				if i > 0 && i < r-1 && j > 0 && j < c-1 {
-					g.Board[i-1][j-1].CheckMine()
-					g.Board[i-1][j].CheckMine()
-					g.Board[i-1][j+1].CheckMine()
-					g.Board[i][j-1].CheckMine()
-					g.Board[i][j+1].CheckMine()
-					g.Board[i+1][j-1].CheckMine()
-					g.Board[i+1][j].CheckMine()
-					g.Board[i+1][j+1].CheckMine()
+					g.Board[i-1][j-1].checkMine()
+					g.Board[i-1][j].checkMine()
+					g.Board[i-1][j+1].checkMine()
+					g.Board[i][j-1].checkMine()
+					g.Board[i][j+1].checkMine()
+					g.Board[i+1][j-1].checkMine()
+					g.Board[i+1][j].checkMine()
+					g.Board[i+1][j+1].checkMine()
 				} else if i == 0 && j == 0 {
-					g.Board[0][1].CheckMine()
-					g.Board[1][0].CheckMine()
-					g.Board[1][1].CheckMine()
+					g.Board[0][1].checkMine()
+					g.Board[1][0].checkMine()
+					g.Board[1][1].checkMine()
 				} else if i == 0 && j == c-1 {
-					g.Board[i][j-1].CheckMine()
-					g.Board[i+1][j].CheckMine()
-					g.Board[i+1][j-1].CheckMine()
+					g.Board[i][j-1].checkMine()
+					g.Board[i+1][j].checkMine()
+					g.Board[i+1][j-1].checkMine()
 				} else if i == r-1 && j == 0 {
-					g.Board[i-1][j].CheckMine()
-					g.Board[i][j+1].CheckMine()
-					g.Board[i-1][j+1].CheckMine()
+					g.Board[i-1][j].checkMine()
+					g.Board[i][j+1].checkMine()
+					g.Board[i-1][j+1].checkMine()
 				} else if i == r-1 && j == c-1 {
-					g.Board[i-1][j-1].CheckMine()
-					g.Board[i-1][j].CheckMine()
-					g.Board[i][j-1].CheckMine()
+					g.Board[i-1][j-1].checkMine()
+					g.Board[i-1][j].checkMine()
+					g.Board[i][j-1].checkMine()
 				} else if i == 0 {
-					g.Board[i][j-1].CheckMine()
-					g.Board[i][j+1].CheckMine()
-					g.Board[i+1][j].CheckMine()
-					g.Board[i+1][j-1].CheckMine()
-					g.Board[i+1][j+1].CheckMine()
+					g.Board[i][j-1].checkMine()
+					g.Board[i][j+1].checkMine()
+					g.Board[i+1][j].checkMine()
+					g.Board[i+1][j-1].checkMine()
+					g.Board[i+1][j+1].checkMine()
 				} else if i == r-1 {
-					g.Board[i-1][j].CheckMine()
-					g.Board[i-1][j-1].CheckMine()
-					g.Board[i-1][j+1].CheckMine()
-					g.Board[i][j-1].CheckMine()
-					g.Board[i][j+1].CheckMine()
+					g.Board[i-1][j].checkMine()
+					g.Board[i-1][j-1].checkMine()
+					g.Board[i-1][j+1].checkMine()
+					g.Board[i][j-1].checkMine()
+					g.Board[i][j+1].checkMine()
 				} else if j == 0 {
-					g.Board[i+1][j].CheckMine()
-					g.Board[i-1][j].CheckMine()
-					g.Board[i+1][j+1].CheckMine()
-					g.Board[i][j+1].CheckMine()
-					g.Board[i-1][j+1].CheckMine()
+					g.Board[i+1][j].checkMine()
+					g.Board[i-1][j].checkMine()
+					g.Board[i+1][j+1].checkMine()
+					g.Board[i][j+1].checkMine()
+					g.Board[i-1][j+1].checkMine()
 				} else if j == c-1 {
-					g.Board[i+1][j].CheckMine()
-					g.Board[i-1][j].CheckMine()
-					g.Board[i+1][j-1].CheckMine()
-					g.Board[i][j-1].CheckMine()
-					g.Board[i-1][j-1].CheckMine()
+					g.Board[i+1][j].checkMine()
+					g.Board[i-1][j].checkMine()
+					g.Board[i+1][j-1].checkMine()
+					g.Board[i][j-1].checkMine()
+					g.Board[i-1][j-1].checkMine()
 				}
 			}
 		}
@@ -107,10 +107,10 @@ func (cell *Cell) HandleRevealed(g *Game, r, c int) {
 	cell.IsRevealed = true
 	g.RevealedCells++
 	if cell.NearbyMines == 0 {
-		g.HandleRevealedNeighbours(r, c)
+		g.handleRevealedNeighbours(r, c)
 	}
 }
-func (g *Game) HandleRevealedNeighbours(r, c int) {
+func (g *Game) handleRevealedNeighbours(r, c int) {
 	i := g.Rows
 	j := g.Cols
 	if g.Board[r][c].NearbyMines != 0 {
@@ -214,7 +214,7 @@ func NewGame(mines, r, c int) *Game {
 			}
 		}
 	}
-	g.PlaceMines()
-	g.CountMines()
+	g.placeMines()
+	g.countMines()
 	return g
 }
