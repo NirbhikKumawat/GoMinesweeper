@@ -20,15 +20,16 @@ type Game struct {
 	TotalCells    int
 	RevealedCells int
 	Mines         int
+	FirstTurn     bool
 }
 
-func (g *Game) placeMines() {
+func (g *Game) placeMinesTurns(m, n int) {
 	mines := g.Mines
 	minesPlaced := 0
 	for minesPlaced < mines {
 		i := rand.Intn(g.Rows)
 		j := rand.Intn(g.Cols)
-		if !g.Board[i][j].IsMine {
+		if !g.Board[i][j].IsMine && !(i == m && j == n) {
 			g.Board[i][j].IsMine = true
 			minesPlaced++
 		}
@@ -168,6 +169,11 @@ func (g *Game) handleRevealedNeighbours(r, c int) {
 	}
 }
 func (g *Game) RevealCell(r, c int) {
+	if g.FirstTurn {
+		g.placeMinesTurns(r, c)
+		g.countMines()
+		g.FirstTurn = false
+	}
 	if g.Board[r][c].IsFlagged {
 		os.Stdout.Write([]byte("Flagged cell should not be revealed"))
 		return
@@ -200,6 +206,7 @@ func NewGame(mines, r, c int) *Game {
 		RevealedCells: 0,
 		TotalCells:    r * c,
 		Mines:         mines,
+		FirstTurn:     true,
 	}
 	g.Board = make([][]Cell, r)
 	for i := range g.Board {
@@ -214,7 +221,5 @@ func NewGame(mines, r, c int) *Game {
 			}
 		}
 	}
-	g.placeMines()
-	g.countMines()
 	return g
 }
