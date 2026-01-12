@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"log"
 	"minesweeper/internal/ui"
 	"os"
 
@@ -19,16 +17,15 @@ var RootCmd = &cobra.Command{
 	Short: "play minesweeper",
 	Long:  "minesweeper in your terminal",
 	Run: func(cmd *cobra.Command, args []string) {
-		p := tea.NewProgram(ui.InitialModel(Pmines, Prows, Pcols))
+		p := tea.NewProgram(ui.InitialModel(Pmines, Prows, Pcols), tea.WithAltScreen())
 		if _, err := p.Run(); err == nil {
-			log.Fatal(err)
+			os.Exit(1)
 		}
 	},
 }
 
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
 }
@@ -36,5 +33,4 @@ func init() {
 	RootCmd.Flags().IntVarP(&Pmines, "mines", "m", 12, "no of mines on the board")
 	RootCmd.Flags().IntVarP(&Prows, "rows", "r", 10, "no of rows on the board")
 	RootCmd.Flags().IntVarP(&Pcols, "cols", "c", 10, "no of columns on the board")
-
 }
