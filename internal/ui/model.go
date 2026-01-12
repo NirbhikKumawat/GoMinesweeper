@@ -5,30 +5,35 @@ import (
 	"minesweeper/internal/engine"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/progress"
+	"github.com/charmbracelet/bubbles/stopwatch"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
-	game     *engine.Game
-	progress progress.Model
-	irow     string
-	icol     string
-	isRowSel bool
+	game      *engine.Game
+	progress  progress.Model
+	irow      string
+	icol      string
+	isRowSel  bool
+	stopwatch stopwatch.Model
 }
 
 func InitialModel(m, r, c int) Model {
 	return Model{
-		game:     engine.NewGame(m, r, c),
-		isRowSel: true,
-		progress: progress.New(progress.WithDefaultGradient()),
+		stopwatch: stopwatch.NewWithInterval(time.Second),
+		game:      engine.NewGame(m, r, c),
+		isRowSel:  true,
+		progress:  progress.New(progress.WithDefaultGradient()),
 	}
 }
 func (m Model) Init() tea.Cmd {
 	return nil
 }
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -43,6 +48,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.icol = m.icol[:len(m.icol)-1]
 			}
 		case "r":
+			if m.game.FirstTurn {
+				cmd = m.stopwatch.Start()
+			}
 			r, _ := strconv.Atoi(m.irow)
 			c, _ := strconv.Atoi(m.icol)
 			if r >= 0 && r < m.game.Rows && c >= 0 && c < m.game.Cols {
@@ -53,6 +61,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.irow = ""
 			m.icol = ""
 			m.isRowSel = true
+			if m.game.GameWon || m.game.GameOver {
+				return m, m.stopwatch.Stop()
+			}
 		case "f":
 			r, _ := strconv.Atoi(m.irow)
 			c, _ := strconv.Atoi(m.icol)
@@ -69,15 +80,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.icol += msg.String()
 			}
 		case "n":
-			return InitialModel(m.game.Mines, m.game.Rows, m.game.Cols), nil
+			return InitialModel(m.game.Mines, m.game.Rows, m.game.Cols), m.stopwatch.Reset()
 		}
 	}
-	return m, nil
+	var swcmd tea.Cmd
+	m.stopwatch, swcmd = m.stopwatch.Update(msg)
+	return m, tea.Batch(cmd, swcmd)
 }
 func (m Model) View() string {
 	var b strings.Builder
 	g := m.game
 	b.WriteString("Minesweeper (Press 'q' to quit)\n")
+	b.WriteString(m.stopwatch.View() + "\n")
 	r := g.Rows
 	c := g.Cols
 	ratio := float64(g.RevealedCells) / float64(g.TotalCells-g.Mines)
@@ -167,6 +181,7 @@ func (m Model) View() string {
 	}
 	if g.GameWon {
 		b.WriteString("\n\033[31mGAME Won! Press 'q' to quit.\033[0m\n")
+		b.WriteString("Solved in " + m.stopwatch.View() + "\n")
 	}
 	return b.String()
 }
