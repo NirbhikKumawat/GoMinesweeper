@@ -81,7 +81,7 @@ func (m Model) View() string {
 	r := g.Rows
 	c := g.Cols
 	ratio := float64(g.RevealedCells) / float64(g.TotalCells-g.Mines)
-	b.WriteString("\n" + m.progress.ViewAs(ratio) + "\n\n" + "   ")
+	b.WriteString("\n" + m.progress.ViewAs(ratio) + "\n\n" + "  ")
 
 	if !g.GameOver {
 		for i := 0; i < c; i++ {
@@ -128,6 +128,7 @@ func (m Model) View() string {
 		b.WriteString(fmt.Sprintf("\n%s Row: %s %s Col: %s", rowMarker, m.irow, colMarker, m.icol))
 		b.WriteString("\n (Type numbers, Tab to switch,'r' to reveal,'f' to flag)\n")
 	} else if g.GameOver {
+		b.WriteString("\n")
 		b.WriteString("  ")
 		for i := 0; i < c; i++ {
 			b.WriteString(fmt.Sprintf("%d ", i))
@@ -137,7 +138,7 @@ func (m Model) View() string {
 			b.WriteString(fmt.Sprintf("%d ", i))
 			for j := 0; j < c; j++ {
 				if g.Board[i][j].IsMine {
-					b.WriteString(fmt.Sprintf("\033[38;5;88m \033[0m"))
+					b.WriteString(fmt.Sprintf("\033[38;5;88mX \033[0m"))
 				} else {
 					if g.Board[i][j].NearbyMines == 0 {
 						b.WriteString(fmt.Sprintf("\033[90m0 \033[0m"))
